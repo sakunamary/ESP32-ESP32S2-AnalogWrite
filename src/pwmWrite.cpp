@@ -6,6 +6,7 @@
 
 #include <Arduino.h>
 #include "pwmWrite.h"
+#include "soc/gpio_periph.h"
 
 Pwm::Pwm() {}
 
@@ -234,7 +235,7 @@ float Pwm::writeServo(int pin, float value)
                 ledcAttach(ch, mem[ch].frequency, mem[ch].resolution);
                 if (sync)
                     pause(ch);
-                ledcAttachPin(pin, ch);
+                ledcAttach(ch, mem[ch].frequency, mem[ch].resolution);
             }
         }
     }
@@ -328,7 +329,7 @@ void Pwm::detach(int pin)
         if (digitalRead(pin) == HIGH)
             delayMicroseconds(mem[ch].servoMaxUs); // wait until LOW
         ledcWrite(ch, 4);                          // set minimal duty
-        ledcDetach(mem[ch].pin);                // jitterless
+        ledcDetach(mem[ch].pin);                   // jitterless
         REG_SET_FIELD(GPIO_PIN_MUX_REG[pin], MCU_SEL, GPIO_MODE_DEF_DISABLE);
     }
 }
@@ -415,7 +416,7 @@ void Pwm::printDebug()
     Serial.printf("\n\nCh  Pin     Hz Res  Duty  Servo     Speed   ke\n");
     for (uint8_t ch = 0; ch < chMax; ch++)
     {
-        Serial.printf("%2d  %3d  %5.0f  %2d  %4d  %d-%d  %5.1f  %1.1f\n", ch, mem[ch].pin, mem[ch].frequency, mem[ch].resolution,
+        Serial.printf("%2d  %3d  %5.0f  %2d  %4ld  %d-%d  %5.1f  %1.1f\n", ch, mem[ch].pin, mem[ch].frequency, mem[ch].resolution,
                       mem[ch].duty, mem[ch].servoMinUs, mem[ch].servoMaxUs, mem[ch].speed, mem[ch].ke);
     }
     Serial.printf("\n");
@@ -501,7 +502,7 @@ void Pwm::wr_servo(int pin, float value, double speed, double ke)
                 ledcAttach(ch, mem[ch].frequency, mem[ch].resolution);
                 if (sync)
                     pause(ch);
-                ledcAttachPin(pin, ch);
+                ledcAttach(ch, mem[ch].frequency, mem[ch].resolution);
             }
         }
     }
